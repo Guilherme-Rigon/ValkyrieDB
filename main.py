@@ -22,7 +22,7 @@ def Dispose():
 	sys.exit()
 
 def Welcome():
-	os.system('cls')
+	os.system('cls' if os.name == 'nt' else 'clear')
 	print("\n")
 	welcome = open("ascii.txt", "r")
 	for linha in welcome:

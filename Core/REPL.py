@@ -8,7 +8,7 @@ from .MetaCommands import MetaCommands
 class REPL:
 	def __init__(self):
 		self.__CleanCommandBuffer()
-		os.system('cls' if os.name == 'nt' else 'clear')
+		#os.system('cls' if os.name == 'nt' else 'clear')
 
 	def ReadCommandBuffer(self, commandBufferValue = None):
 		if commandBufferValue == None:

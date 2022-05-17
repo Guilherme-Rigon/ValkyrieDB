@@ -106,7 +106,7 @@ class Parser:
                 break
 
             i += 1
-        if len(commandList) > 0:
+        if len(commandList) > 0 and not self.__hasErros:
             self.__ExecuteInSQLite(commandList)
 
     def __select(self, tokens, index = 0): # Implementar a analise do WHERE e TESTAR COM DOIS COMANDOS
@@ -238,8 +238,8 @@ class Parser:
                 if tokens[i].getType() != "EOF":
                     command += f"{self.__writeToken(tokens[i])} "
                 i += 1
-
-        if command != None and setStatus and whereStatus:
+        
+        if command != None and setStatus and ((whereStatus and 'WHERE' in command) or not whereStatus):
             return (command, i)
         else:
             return ('', index)
