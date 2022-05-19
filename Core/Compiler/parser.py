@@ -55,43 +55,43 @@ class Parser:
         command = ""
         i = 0
         while i < len(self.tokens) and not self.__hasErros:
-            if self.tokens[i].getType() == "SELECT":
+            if self.tokens[i].getType() == Keywords.SELECIONE:
                 (command, i) = self.__select(self.tokens, i)
                 if command == '':
                     break
                 commandList.append(command)
                 command = ""
-            elif self.tokens[i].getType() == "INSERT":
+            elif self.tokens[i].getType() == Keywords.INSIRA:
                 (command, i) = self.__insert(self.tokens, i)
                 if command == '':
                     break
                 commandList.append(command)
                 command = ""
-            elif self.tokens[i].getType() == "UPDATE":
+            elif self.tokens[i].getType() == Keywords.ATUALIZE:
                 (command, i) = self.__update(self.tokens, i)
                 if command == '':
                     break
                 commandList.append(command)
                 command = ""
-            elif self.tokens[i].getType() == "DELETE":
+            elif self.tokens[i].getType() == Keywords.DELETE:
                 (command, i) = self.__delete(self.tokens, i)
                 if command == '':
                     break
                 commandList.append(command)
                 command = ""
-            elif self.tokens[i].getType() == Keywords.CREATE:
+            elif self.tokens[i].getType() == Keywords.CRIE:
                 (command, i) = self.__create(self.tokens, i)
                 if command == '':
                     break
                 commandList.append(command)
                 command = ""
-            elif self.tokens[i].getType() == Keywords.ALTER:
+            elif self.tokens[i].getType() == Keywords.ALTERE:
                 (command, i) = self.__alter(self.tokens, i)
                 if command == '':
                     break
                 commandList.append(command)
                 command = ""
-            elif self.tokens[i].getType() == Keywords.DROP:
+            elif self.tokens[i].getType() == Keywords.EXCLUA:
                 (command, i) = self.__drop(self.tokens, i)
                 if command == '':
                     break
@@ -110,25 +110,25 @@ class Parser:
             self.__ExecuteInSQLite(commandList)
 
     def __select(self, tokens, index = 0): # Implementar a analise do WHERE e TESTAR COM DOIS COMANDOS
-        KeywordId = 'SELECT'
+        KeywordId = Keywords.SELECIONE
         vSELECT = False
         vFROM = False
         vWHERE = False
         HasWhere = False
         i = 0
         command = ""
-        if tokens[index].getType() == 'SELECT':
+        if tokens[index].getType() == Keywords.SELECIONE:
             while i < len(tokens):
-                if tokens[i].getType() == 'WHERE':
+                if tokens[i].getType() == Keywords.ONDE:
                     HasWhere = True
-                    KeywordId = 'WHERE'
+                    KeywordId = Keywords.ONDE
 
-                if tokens[i].getType() in ('id', '*') and KeywordId == 'SELECT':
-                    vSELECT, i = self.__getIdentificators(tokens, i, ('id', '*'))
-                    KeywordId = 'FROM'
-                elif vSELECT and KeywordId == 'FROM' and tokens[i].getType() == 'id':
+                if tokens[i].getType() in ('id', Keywords.TUDO) and KeywordId == Keywords.SELECIONE:
+                    vSELECT, i = self.__getIdentificators(tokens, i, ('id', Keywords.TUDO))
+                    KeywordId = Keywords.DE
+                elif vSELECT and KeywordId == Keywords.DE and tokens[i].getType() == 'id':
                     vFROM, i = self.__getIdentificators(tokens, i)
-                elif vFROM and HasWhere and KeywordId == 'WHERE' and tokens[i].getType() in ('id', 'String', 'Number', 'Variable') and not vWHERE:
+                elif vFROM and HasWhere and KeywordId == Keywords.ONDE and tokens[i].getType() in ('id', 'String', 'Number', 'Variable') and not vWHERE:
                     vWHERE, i = self.__verifyWhereKeyword(tokens, i)
                     if not vWHERE:
                         break
@@ -152,10 +152,10 @@ class Parser:
     def __insert(self, tokens, index = 0):
         iSintaxe = 1
         sintaxe = {
-            1 : "INSERT",
-            2 : "INTO",
+            1 : Keywords.INSIRA,
+            2 : Keywords.EM,
             3 : "id",
-            4 : "VALUES",
+            4 : Keywords.VALORES,
             5 : "(",
             6 : ('id', 'Number', 'String', 'Separator'),
             7 : ")"
@@ -164,7 +164,7 @@ class Parser:
         ids = []
         dataStatus = None
         command = ""
-        if tokens[index].getType() == "INSERT":
+        if tokens[index].getType() == Keywords.INSIRA:
             while i < len(tokens):
                 if iSintaxe == 6:
                     if dataStatus == None:
@@ -199,11 +199,11 @@ class Parser:
     def __update(self, tokens, index = 0):
         iSintaxe = 1
         sintaxe = {
-            1 : "UPDATE",
+            1 : Keywords.ATUALIZE,
             2 : "id",
-            3 : "SET",
+            3 : Keywords.DEFINA,
             4 : "id",
-            5 : "WHERE"
+            5 : Keywords.ONDE
         }
         i = index
         ids = []
@@ -211,7 +211,7 @@ class Parser:
         whereStatus = False
         command = ""
 
-        if tokens[index].getType() == "UPDATE":
+        if tokens[index].getType() == Keywords.ATUALIZE:
             while i < len(tokens) and not self.__hasErros:
                 if iSintaxe == 4 and not setStatus:
                     (setStatus, i, commandReturned) = self.__searchTokenPattern(tokens, i, ('id', '=', 'External'))
@@ -239,7 +239,7 @@ class Parser:
                     command += f"{self.__writeToken(tokens[i])} "
                 i += 1
         
-        if command != None and setStatus and ((whereStatus and 'WHERE' in command) or not whereStatus):
+        if command != None and setStatus and ((whereStatus and Keywords.WHERE in command) or not whereStatus):
             return (command, i)
         else:
             return ('', index)
@@ -247,17 +247,17 @@ class Parser:
     def __delete(self, tokens, index = 0):
         iSintaxe = 1
         sintaxe = {
-            1 : "DELETE",
-            2 : "FROM",
+            1 : Keywords.DELETE,
+            2 : Keywords.DE,
             3 : "id",
-            4 : "WHERE"
+            4 : Keywords.ONDE
         }
         i = index
         ids = []
         whereStatus = False
         command = ""
         
-        if tokens[index].getType() == "DELETE":
+        if tokens[index].getType() == Keywords.DELETE:
             while i < len(tokens) and not self.__hasErros:
                 if iSintaxe == 5 and not whereStatus and tokens[i].getType() in ('id', 'String', 'Number', 'Variable') :
                     (whereStatus, i) = self.__verifyWhereKeyword(tokens, i)
@@ -287,21 +287,21 @@ class Parser:
     def __create(self, tokens, index = 0):
         iSintaxe = 0
         sintaxe = {
-            1 : Keywords.CREATE,
-            2 : Keywords.TABLE,
+            1 : Keywords.CRIE,
+            2 : Keywords.TABELA,
             3 : "id",
             4 : "(",
             5 : "id",
-            6 : Keywords.ALLDATATYPES,
-            7 : Keywords.PRIMARY,
-            8 : Keywords.KEY,
+            6 : Keywords.PSQLDATATYPES,
+            7 : Keywords.IDENTIFICADOR,
+            8 : Keywords.CHAVE,
             9 : "Separator",
             10 : ")"
         }
         i = index
         ids = []
         command = ""
-        if tokens[i].getType() == Keywords.CREATE:
+        if tokens[i].getType() == Keywords.CRIE:
             while i < len(tokens) and not self.__hasErros and iSintaxe < 10:
                 iSintaxe += 1
                 if iSintaxe == 7 and tokens[i].getType() == sintaxe[iSintaxe]:
@@ -341,13 +341,13 @@ class Parser:
     def __alter(self, tokens, index = 0):
         iSintaxe = 0
         sintaxe = {
-            1 : Keywords.ALTER,
-            2 : Keywords.TABLE,
+            1 : Keywords.ALTERE,
+            2 : Keywords.TABELA,
             3 : "id",
-            4 : (Keywords.ADD, Keywords.RENAME),
+            4 : (Keywords.ADICIONE, Keywords.RENOMEIE),
             5 : "id",
-            6 : Keywords.ALLDATATYPES,
-            7 : Keywords.TO,
+            6 : Keywords.PSQLDATATYPES,
+            7 : Keywords.PARA,
             8 : "id"
         }
         i = index
@@ -355,13 +355,13 @@ class Parser:
         command = ""
         addStatus = None
         toStatus = None
-        if tokens[i].getType() == Keywords.ALTER:
+        if tokens[i].getType() == Keywords.ALTERE:
             while i < len(tokens) and not self.__hasErros and iSintaxe < 8:
                 iSintaxe += 1
                 if iSintaxe == 5:
-                    if sintaxe[4] == Keywords.ADD:
+                    if sintaxe[4] == Keywords.ADICIONE:
                         addStatus = self.__retriveAddKeywordContent(tokens, i)
-                    elif sintaxe[4] == Keywords.RENAME:
+                    elif sintaxe[4] == Keywords.RENOMEIE:
                         toStatus = self.__retriveTOKeyword(tokens, i)
                     else:
                         thk = tokens[i]
@@ -386,13 +386,13 @@ class Parser:
     def __drop(self, tokens, index = 0):
         iSintaxe = 0
         sintaxe = {
-            1 : Keywords.DROP,
-            2 : Keywords.TABLE,
+            1 : Keywords.EXCLUA,
+            2 : Keywords.TABELA,
             3 : "id"
         }
         i = index
         command = ""
-        if tokens[i].getType() == Keywords.DROP:
+        if tokens[i].getType() == Keywords.EXCLUA:
             while i < len(tokens) and not self.__hasErros and iSintaxe < 3:
                 iSintaxe += 1
                 if tokens[i].getType() != sintaxe[iSintaxe]:
@@ -446,7 +446,7 @@ class Parser:
             1 : searchedTokens,
             2 : Consts.relational_operators,
             3 : searchedTokens,
-            4 : Keywords.LOGICAL_OPERATIONS
+            4 : Keywords.PSQL_LOGICAL_OPERATIONS
         }
 
         if tokens[index].getType() not in searchedTokens:
@@ -458,7 +458,7 @@ class Parser:
         while i < len(tokens) and tokens[i].getType() not in ('EOC', 'EOF'):
             if count == 4:
                 count = 0
-                if tokens[i].getType() in Keywords.LOGICAL_OPERATIONS:
+                if tokens[i].getType() in Keywords.PSQL_LOGICAL_OPERATIONS:
                     ids.append(tokens[i])
                 #elif tokens[i].getType() in searchedTokens + tuple(Keywords.LOGICAL_OPERATIONS) + tuple(Consts.relational_operators):
                 else:
@@ -517,7 +517,7 @@ class Parser:
         iSintaxe = 0
         sintaxe = {
             1 : "id",
-            2 : Keywords.ALLDATATYPES
+            2 : Keywords.PSQLDATATYPES
         }
         while i < len(tokens) and not self.__hasErros and tokens[i].getType() not in ("EOC", "EOF") and iSintaxe < 2:
             iSintaxe += 1
@@ -534,7 +534,7 @@ class Parser:
         i = index
         iSintaxe = 0
         sintaxe = {
-            1 : Keywords.TO,
+            1 : Keywords.PARA,
             2 : "id"
         }
         while i < len(tokens) and not self.__hasErros and tokens[i].getType() not in ("EOC", "EOF"):
@@ -548,6 +548,7 @@ class Parser:
 
     def __writeToken(self, token):
         value = f"{token.getType() if token.getType() in Keywords.ALL else token.getValue()}"
+        value = Keywords.GetSQLKeyword(value)
         if token.getType() == 'String':
             return f"'{value}'"
         else:
