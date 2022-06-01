@@ -34,8 +34,8 @@ class REPL:
 					tokenizer = Tokenizer(self.__command)
 					tokens = tokenizer.tokenize()
 					
-					for token in tokens:
-						print(str(token))
+					#for token in tokens:
+						#print(str(token))
 					
 					parser = Parser(tokens)
 					parser.Execute()

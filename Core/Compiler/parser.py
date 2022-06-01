@@ -302,8 +302,9 @@ class Parser:
         i = index
         ids = []
         command = ""
+        fkStatus = None
         if tokens[i].getType() == Keywords.CRIE:
-            while i < len(tokens) and not self.__hasErros and iSintaxe < 10:
+            while i < len(tokens) and not self.__hasErros and iSintaxe < 10 and tokens[i].getType() not in ("EOC", "EOF"):
                 iSintaxe += 1
                 if iSintaxe == 7 and tokens[i].getType() == sintaxe[iSintaxe]:
                     if tokens[i + 1].getType() == sintaxe[iSintaxe + 1]:
@@ -324,6 +325,9 @@ class Parser:
                     iSintaxe = 4
                 elif iSintaxe == 9:
                     iSintaxe += 1
+                elif iSintaxe == 5 and tokens[i].getType() == Keywords.CHAVE:
+                    fkStatus, partialCommand, i = self.__retriveForeignKeyKeyword(tokens, i)
+                    command += partialCommand
                 elif tokens[i].getType() == sintaxe[iSintaxe]:
                     ids.append(tokens[i])
                 else:
@@ -333,8 +337,7 @@ class Parser:
                 if tokens[i].getType() != "EOF":
                     command += f"{self.__writeToken(tokens[i])} "
                 i += 1
-
-        if not self.__hasErros:
+        if not self.__hasErros and (fkStatus or fkStatus == None):
             return (command, i)
         else:
             return ('', index)
@@ -547,6 +550,43 @@ class Parser:
                 return False
             i += 1
         return True
+
+    def __retriveForeignKeyKeyword(self, tokens, index):
+        i = index
+        iSintaxe = 0
+        sintaxe = {
+            1 : Keywords.CHAVE,
+            2 : Keywords.ESTRANGEIRA,
+            3 : '(',
+            4 : 'id',
+            5 : ')',
+            6 : Keywords.REFERENTE,
+            7 : 'id',
+            8 : '(',
+            9 : 'id',
+            10 : ')'
+        }
+        command = ""
+        
+        while i < len(tokens) and not self.__hasErros and tokens[i].getType() not in ("EOC", "EOF") and iSintaxe < len(sintaxe):
+            iSintaxe += 1
+            if iSintaxe in (1, 2):
+                if tokens[i].getType() == sintaxe[1] and tokens[i + 1].getType() == sintaxe[2]:
+                    command += f"{Keywords.FOREIGN} {Keywords.KEY} "
+                    i += 2
+                    iSintaxe = 2
+                    continue
+                else:
+                    thk = tokens[i]
+                    self.__showMessageError(f'[PSQL#23] Token `{Keywords.GetPSQL(thk.getValue())}` não esperado próximo a {thk.getPosition()}')
+                    return (False, '', index)
+            elif tokens[i].getType() != sintaxe[iSintaxe]:
+                thk = tokens[i]
+                self.__showMessageError(f'[PSQL#24] Token `{Keywords.GetPSQL(thk.getValue())}` não esperado próximo a {thk.getPosition()}')
+                return (False, '', index)
+            command += f"{self.__writeToken(tokens[i])} "
+            i += 1
+        return (True, command, i)
 
     def __writeToken(self, token):
         value = f"{token.getType() if token.getType() in Keywords.ALL else token.getValue()}"
