@@ -39,3 +39,15 @@ class REPL:
 					
 					parser = Parser(tokens)
 					parser.Execute()
+
+	def ExecuteBufferFile(self, archive):
+		for lineText in archive.readlines():
+			tokenizer = Tokenizer(lineText)
+			tokens = tokenizer.tokenize()
+
+			#for token in tokens:
+				#print(str(token))
+			if len(tokens) > 1:
+				print(f"{lineText}")
+				parser = Parser(tokens)
+				parser.Execute()

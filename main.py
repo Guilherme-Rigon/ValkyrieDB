@@ -10,10 +10,20 @@ def main(args = sys.argv[1:]):
 	'''
 	
 	try:
+		input = None
 		if '-w' in args:
 			Welcome()
 		repl = REPL()
-		repl.InitializeBuffer()
+		if '-path' in args:
+			path = args[args.index('-path') + 1]
+			if path.endswith('.psql'):
+				archive = open(path, 'r')
+				repl.ExecuteBufferFile(archive)
+				archive.close()
+			else:
+				print('A extensão informada não é surpotada pelo sistema!')
+		else:
+			repl.InitializeBuffer()
 	finally:
 		Dispose()
 

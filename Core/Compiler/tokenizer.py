@@ -58,7 +58,7 @@ class Tokenizer:
 		pos = CharPosition(self.idx, self.ln, self.col)
 
 		self.advance()
-		while not self.__endOfFile() and self.__getCurrentChar() in Consts.text_values + Consts.numeric_values and self.__getCurrentChar() != "'":
+		while not self.__endOfFile() and self.__getCurrentChar() in Consts.text_values + Consts.numeric_values + '()' and self.__getCurrentChar() != "'":
 			value += self.__getCurrentChar()
 			self.advance()
 			
@@ -123,8 +123,6 @@ class Tokenizer:
 				self.__addToken(self.__getLogicalOperation())
 			elif current_char == "'":
 				self.__addToken(self.__getString())
-			elif current_char == "@":
-				self.__addToken(self.__getVariable())
 			elif current_char == ";":
 				self.__addToken(Token("EOC", CharPosition(self.idx, self.ln, self.col), ";"))
 				self.advance()
