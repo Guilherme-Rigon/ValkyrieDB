@@ -38,7 +38,7 @@ class Parser:
                     print("Comando executado com sucesso!")
                 else:
                     print(f"Linhas afetadas: {cursor.rowcount}")
-
+            print()
             con.commit()
             con.close()
         except sqlite3.Error as er:
@@ -106,6 +106,7 @@ class Parser:
                 break
 
             i += 1
+            #print(commandList)
         if len(commandList) > 0 and not self.__hasErros:
             self.__ExecuteInSQLite(commandList)
 
@@ -146,7 +147,7 @@ class Parser:
                 command = command.strip()
             return (command, i)
         else:
-            self.__showMessageError(f"[PSQL#08] Comando `{command}` não pode ser executado pelo sistema, por favor verifique a sintaxe antes de executar novamente.")
+            self.__showMessageError(f"[PSQL#08] Comando não pode ser executado pelo sistema, por favor verifique a sintaxe antes de executar novamente.")
             return ('', i)
 
     def __insert(self, tokens, index = 0):
@@ -397,7 +398,8 @@ class Parser:
                 iSintaxe += 1
                 if tokens[i].getType() != sintaxe[iSintaxe]:
                     thk = tokens[i]
-                    self.__showMessageError(f'[PSQL#22] Token `{Keywords.GetPSQL(thk.getValue())}` não esperado próximo a {thk.getPosition()}')
+                    self.__showMessageError(f'[PSQL#22] Token `{Keywords.GetPSQL(thk.getValue())}` '
+                    + f'não esperado próximo a {thk.getPosition()}')
                 if tokens[i].getType() != "EOF":
                     command += f"{self.__writeToken(tokens[i])} "
                 i += 1
